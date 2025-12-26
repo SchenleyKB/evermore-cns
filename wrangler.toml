@@ -1,0 +1,13 @@
+name = "evermore-cns"
+main = "src/index.py"
+compatibility_date = "2025-01-10"
+
+[[kv_namespaces]]
+binding = "AGENT_STATE"
+id = "ba7854cebeec4d9a850da35556cc79e1"
+
+[env.production]
+name = "evermore-cns"
+
+[build]
+command = "pip install -r requirements.txt"
