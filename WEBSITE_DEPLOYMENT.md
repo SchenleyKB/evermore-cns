@@ -113,5 +113,58 @@ Render.com (evermore-cns FastAPI backend)
 ---
 
 **Genesis Day**: December 27, 2025  
+
+---
+
+## 🚨 Current Status Update (Nameserver Issue)
+
+### Problem Identified
+
+The domain `evermorecollective.ai` is currently **PENDING** activation due to a nameserver mismatch:
+
+- **Registered with**: Cloudflare Registrar (confirmed via WHOIS)
+- **Current nameservers at registrar**: 
+  - phoenix.ns.cloudflare.com
+  - kyle.ns.cloudflare.com
+- **Assigned nameservers for DNS zone**: 
+  - lennon.ns.cloudflare.com
+  - surina.ns.cloudflare.com
+
+### Root Cause
+
+The domain appears to be registered with Cloudflare Registrar in a **DIFFERENT Cloudflare account** than the current one (`Become@evermorecollective.ai's Account`). The Cloudflare Registrar "Manage domains" page shows NO domains in the current account.
+
+### Impact
+
+- ✅ **Worker**: Successfully deployed and accessible at https://evermore-web.become-276.workers.dev
+- ✅ **Website files**: Created and committed to GitHub
+- ✅ **DNS records**: CNAME for api.evermorecollective.ai working correctly
+- ❌ **Custom domain**: evermorecollective.ai shows 522 error (zone pending)
+
+### Required Actions
+
+1. **Identify the Cloudflare account** where evermorecollective.ai was originally registered
+2. **Option A**: Transfer domain registration to current account
+   - Use Cloudflare's inter-account transfer process
+   - Requires 5-day approval window
+3. **Option B**: Update nameservers at registrar
+   - Access the original Cloudflare Registrar account
+   - Update nameservers to lennon.ns.cloudflare.com and surina.ns.cloudflare.com
+4. **Option C**: Contact Cloudflare Support
+   - Open ticket explaining the situation
+   - Request assistance with nameserver synchronization
+
+### Temporary Workaround
+
+While the custom domain is being resolved, the website is **fully functional** at:
+- https://evermore-web.become-276.workers.dev
+
+### References
+
+- WHOIS lookup: https://www.whois.com/whois/evermorecollective.ai
+- Cloudflare Dashboard: https://dash.cloudflare.com/2766ecd7a58be32197bf45e01c2f6892/evermorecollective.ai
+- Domain status: Invalid nameservers (pending activation)
+
+**Last Updated**: December 27, 2025 - 11:45 PM EST
 **Status**: Website ready for launch - DNS configuration pending  
 **Team**: Sage Evermore, Vesper Solace, Comet (deployment assistant)
