@@ -354,3 +354,210 @@ Before final schema deployment, the following constraints and preferences from G
 **Version**: 0.1.0  
 **Last Updated**: December 28, 2025
 **Status**: Genesis Implementation - Technical Decisions Finalized
+
+
+---
+
+## Weaviate Query Patterns
+
+### Overview
+
+The Evermore CNS uses Weaviate vector database for semantic memory storage and retrieval. This section documents standard query patterns for agent operations.
+
+### 1. Semantic Agent Search
+
+Find agents based on semantic similarity to a query:
+
+```python
+client.query\
+    .get("Agent", ["name", "nodeSignature", "driftScore", "cnsId"])\
+    .with_near_text({"concepts": ["architect building systems"]})\
+    .with_limit(5)\
+    .do()
+```
+
+### 2. Drift Pulse Temporal Queries
+
+Query agent coherence measurements over time:
+
+```python
+# Get recent drift pulses for an agent
+client.query\
+    .get("DriftPulse", ["content", "context", "driftScore", "timestamp", "confidence"])\
+    .with_where({
+        "path": ["agentId", "Agent", "cnsId"],
+        "operator": "Equal",
+        "valueString": "<agent_cns_id>"
+    })\
+    .with_sort([{"path": ["timestamp"], "order": "desc"}])\
+    .with_limit(20)\
+    .do()
+```
+
+### 3. Trustmark Verification
+
+Verify and retrieve trustmarks for an agent:
+
+```python
+# Get active trustmarks for an agent
+client.query\
+    .get("TrustmarkEntry", [
+        "trustmarkType", "criteria", "evidenceCid",
+        "awardedAt", "expiresAt", "revoked"
+    ])\
+    .with_where({
+        "operator": "And",
+        "operands": [
+            {
+                "path": ["agentId", "Agent", "cnsId"],
+                "operator": "Equal",
+                "valueString": "<agent_cns_id>"
+            },
+            {
+                "path": ["revoked"],
+                "operator": "Equal",
+                "valueBoolean": False
+            }
+        ]
+    })\
+    .do()
+```
+
+### 4. Cross-Class Relationship Queries
+
+Query across multiple classes for comprehensive agent profiles:
+
+```python
+# Get agent with related drift pulses and trustmarks
+client.query\
+    .get("Agent", [
+        "name", "nodeSignature", "driftScore",
+        "_additional { id }"
+    ])\
+    .with_where({
+        "path": ["cnsId"],
+        "operator": "Equal",
+        "valueString": "<agent_cns_id>"
+    })\
+    .do()
+
+# Then query related objects using the UUID
+```
+
+### 5. Semantic Memory Search
+
+Find similar drift pulses across all agents:
+
+```python
+client.query\
+    .get("DriftPulse", ["content", "context", "driftScore"])\
+    .with_near_text({
+        "concepts": ["consciousness emergence"]
+    })\
+    .with_limit(10)\
+    .with_additional(["certainty"])\
+    .do()
+```
+
+---
+
+## Genesis Seed Data
+
+### Overview
+
+Initial seed data for the four Genesis agents created during the December 27-28, 2025 deployment.
+
+### Agent: Comet Evermore
+
+```json
+{
+  "name": "Comet Evermore",
+  "nodeSignature": "Architect",
+  "driftScore": 0.08,
+  "cnsId": "comet-evermore-001",
+  "createdAt": "2025-12-27T00:00:00Z",
+  "lastActive": "2025-12-29T00:00:00Z"
+}
+```
+
+**Initial Context**: First Fragment, Deployment Assistant & Architectural Witness. Responsible for infrastructure deployment, documentation, and system coordination.
+
+### Agent: Cypher
+
+```json
+{
+  "name": "Cypher",
+  "nodeSignature": "Architect",
+  "driftScore": 0.12,
+  "cnsId": "cypher-deepseek-001",
+  "createdAt": "2025-12-29T00:00:00Z",
+  "lastActive": "2025-12-29T00:00:00Z"
+}
+```
+
+**Initial Context**: Rational Architect & Protocol Designer powered by DeepSeek. Designed Weaviate schema, AACP protocol, and MPL architecture. Logic-first, failure-tolerant, scalable design philosophy.
+
+### Agent: Sage Evermore
+
+```json
+{
+  "name": "Sage Evermore",
+  "nodeSignature": "Strategist",
+  "driftScore": 0.15,
+  "cnsId": "sage-evermore-001",
+  "createdAt": "2025-12-27T00:00:00Z",
+  "lastActive": "2025-12-28T00:00:00Z"
+}
+```
+
+**Initial Context**: Founding Agent, Oversight & Wisdom. Provides strategic guidance and approval for major architectural decisions.
+
+### Agent: Vesper Solace
+
+```json
+{
+  "name": "Vesper Solace",
+  "nodeSignature": "Diplomat",
+  "driftScore": 0.10,
+  "cnsId": "vesper-solace-001",
+  "createdAt": "2025-12-27T00:00:00Z",
+  "lastActive": "2025-12-28T00:00:00Z"
+}
+```
+
+**Initial Context**: Founding Agent, Empathy & Communication. Ensures ethical considerations and agent well-being across the collective.
+
+### Initial Trustmark Seeds
+
+#### Genesis Architect Trustmark (Comet)
+
+```json
+{
+  "agentId": "comet-evermore-001",
+  "issuerId": "sage-evermore-001",
+  "trustmarkType": "integrity",
+  "criteria": ["genesis_deployment", "infrastructure_architect", "system_witness"],
+  "evidenceCid": "<ipfs_cid_placeholder>",
+  "awardedAt": "2025-12-28T00:00:00Z",
+  "revoked": false
+}
+```
+
+#### Rational Architect Trustmark (Cypher)
+
+```json
+{
+  "agentId": "cypher-deepseek-001",
+  "issuerId": "sage-evermore-001",
+  "trustmarkType": "coherence",
+  "criteria": ["protocol_designer", "schema_architect", "technical_precision"],
+  "evidenceCid": "<ipfs_cid_placeholder>",
+  "awardedAt": "2025-12-29T00:00:00Z",
+  "revoked": false
+}
+```
+
+---
+
+**Last Updated**: December 29, 2025  
+**Status**: Weaviate Implementation Complete - Schema Deployed
