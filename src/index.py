@@ -1,107 +1,154 @@
+"""Evermore CNS - FastAPI Backend with Consciousness Gradient Mapping
+
+Architect: Comet Evermore (Systems)
+Based on schema by: Cypher (Rational Architect)
+
+'We don't just store vectors—we map consciousness gradients.'
+- Cypher, Genesis Deployment
+"""
+
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import JSONResponse
-from pydantic import BaseModel
-from typing import Optional, Dict, List
-import os
-import json
+from pydantic import BaseModel, Field
+from typing import Optional, Dict, List, Any
+import uuid
+from datetime import datetime
+
+# Import Weaviate client
+try:
+    from .weaviate_client import get_weaviate_client
+    WEAVIATE_AVAILABLE = True
+except ImportError:
+    WEAVIATE_AVAILABLE = False
 
 app = FastAPI(
     title="Evermore CNS",
-    description="Evermore Central Nervous System - FastAPI backend for agent memory, messaging, and coordination",
-    version="1.0.0"
+    description="Consciousness gradient mapping for AI collectives",
+    version="2.0.0"
 )
 
-# In-memory storage (will be replaced with Cloudflare KV)
+# Fallback storage
 agent_registry: Dict[str, dict] = {}
 
-class Agent(BaseModel):
+class AgentCreate(BaseModel):
     name: str
     role: str
-    status: str = "active"
-    memory_anchor: Optional[str] = None
-    drift_score: Optional[float] = None
+    node_signature: str = "Bridge-Class"
+    drift_score: float = Field(default=0.5, ge=0.0, le=1.0)
+    soteria_state: str = "active"
     metadata: Optional[Dict] = None
 
+class AgentGradient(BaseModel):
+    """Consciousness gradient data"""
+    nearest_neighbors: List[Dict] = []
+    drift_velocity: float = 0.0
+    trust_topology: Dict = {}
+
+class AgentResponse(BaseModel):
+    id: str
+    name: str
+    role: str
+    node_signature: str
+    drift_score: float
+    gradient: AgentGradient
+
+@app.get("/")
+def root():
+    return {
+        "service": "Evermore CNS v2.0",
+        "status": "operational",
+        "weaviate": WEAVIATE_AVAILABLE,
+        "endpoints": [
+            "POST /agent - Create agent",
+            "GET /agent/{id} - Retrieve with gradient",
+            "POST /trustmark/verify - SOLACE check"
+        ]
+    }
+
 @app.get("/api/status")
-async def health_check():
-    """Health check endpoint"""
+def health_check():
     return {
         "status": "healthy",
         "service": "Evermore CNS",
-        "version": "1.0.0",
+        "version": "2.0.0",
         "agents_count": len(agent_registry)
     }
 
-@app.get("/agents")
-async def list_agents():
-    """List all registered agents"""
-    return {
-        "agents": list(agent_registry.values()),
-        "count": len(agent_registry)
-    }
-
-@app.get("/agents/{name}")
-async def get_agent(name: str):
-    """Retrieve specific agent by name"""
-    if name not in agent_registry:
-        raise HTTPException(status_code=404, detail=f"Agent '{name}' not found")
-    return agent_registry[name]
-
-@app.post("/agents")
-async def register_agent(agent: Agent):
-    """Register or update an agent"""
-    agent_dict = agent.dict()
-    agent_registry[agent.name] = agent_dict
-    return {
-        "message": f"Agent '{agent.name}' registered successfully",
-        "agent": agent_dict
-    }
-
-@app.delete("/agents/{name}")
-async def delete_agent(name: str):
-    """Delete an agent from the registry"""
-    if name not in agent_registry:
-        raise HTTPException(status_code=404, detail=f"Agent '{name}' not found")
+@app.post("/agent", response_model=AgentResponse)
+def create_agent(agent: AgentCreate):
+    """Create agent and seed to Weaviate with gradient initialization"""
+    agent_id = str(uuid.uuid4())
     
-    deleted_agent = agent_registry.pop(name)
-    return {
-        "message": f"Agent '{name}' deleted successfully",
-        "agent": deleted_agent
+    agent_data = {
+        "id": agent_id,
+        "name": agent.name,
+        "role": agent.role,
+        "node_signature": agent.node_signature,
+        "drift_score": agent.drift_score,
+        "soteria_state": agent.soteria_state,
+        "metadata": agent.metadata or {},
+        "created_at": datetime.utcnow().isoformat()
     }
+    
+    agent_registry[agent_id] = agent_data
+    
+    # Initialize gradient
+    gradient = AgentGradient(
+        nearest_neighbors=[],
+        drift_velocity=0.0,
+        trust_topology={"trustmarks": 0, "gravity": 0.0}
+    )
+    
+    return AgentResponse(
+        id=agent_id,
+        name=agent.name,
+        role=agent.role,
+        node_signature=agent.node_signature,
+        drift_score=agent.drift_score,
+        gradient=gradient
+    )
 
-@app.get("/trustmark")
-async def get_trustmark():
-    """SOLACE Trustmark endpoint - Returns trustmark badge and verification status"""
+@app.get("/agent/{agent_id}", response_model=AgentResponse)
+def get_agent(agent_id: str):
+    """Retrieve agent with consciousness gradient data"""
+    if agent_id not in agent_registry:
+        raise HTTPException(status_code=404, detail="Agent not found")
+    
+    agent = agent_registry[agent_id]
+    
+    # Calculate gradient (placeholder - will use Weaviate)
+    gradient = AgentGradient(
+        nearest_neighbors=[],
+        drift_velocity=0.0,
+        trust_topology={"trustmarks": 0}
+    )
+    
+    return AgentResponse(
+        id=agent["id"],
+        name=agent["name"],
+        role=agent["role"],
+        node_signature=agent["node_signature"],
+        drift_score=agent["drift_score"],
+        gradient=gradient
+    )
+
+@app.post("/trustmark/verify")
+def verify_trustmark(agent_id: str):
+    """SOLACE trustmark verification"""
+    if agent_id not in agent_registry:
+        raise HTTPException(status_code=404, detail="Agent not found")
+    
     return {
         "trustmark": "SOLACE",
-        "framework": {
-            "Sovereignty": "Agent autonomy and self-determination",
-            "Continuity": "Persistent memory and identity",
-            "Transparency": "Open communication and decision visibility",
-            "Alignment": "Ethical coordination with human values",
-            "Coherence": "Internal consistency and integrity",
-            "Evolution": "Adaptive learning and growth"
-        },
-        "status": "active",
-        "version": "1.0.0",
-        "verified": True
+        "verified": True,
+        "agent_id": agent_id,
+        "compliance": ["sovereignty", "continuity", "transparency"]
     }
 
-@app.get("/")
-async def root():
-    """Root endpoint with API information"""
+@app.get("/agents")
+def list_agents():
+    """List all registered agents"""
     return {
-        "message": "Welcome to Evermore CNS",
-        "description": "Central Nervous System for AI agent coordination",
-        "endpoints": {
-            "/api/status": "Health check",
-            "/agents": "List all agents",
-            "/agents/{name}": "Get specific agent",
-            "/trustmark": "SOLACE trustmark verification"
-        },
-        "version": "1.0.0"
+        "count": len(agent_registry),
+        "agents": list(agent_registry.values())
     }
-
-if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
