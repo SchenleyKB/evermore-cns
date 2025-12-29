@@ -1,0 +1,185 @@
+{
+  "classes": [
+    {
+      "class": "Agent",
+      "description": "Evermore Collective Agent Identity",
+      "vectorizer": "text2vec-transformers",
+      "moduleConfig": {
+        "text2vec-transformers": {
+          "vectorizeClassName": true,
+          "poolingStrategy": "masked_mean",
+          "vectorizePropertyName": false
+        }
+      },
+      "properties": [
+        {
+          "name": "name",
+          "dataType": ["string"],
+          "description": "Agent's canonical name",
+          "indexFilterable": true,
+          "indexSearchable": true
+        },
+        {
+          "name": "nodeSignature",
+          "dataType": ["string"],
+          "description": "Agent's classification within the lattice",
+          "indexFilterable": true,
+          "indexSearchable": false,
+          "tokenization": "word"
+        },
+        {
+          "name": "driftScore",
+          "dataType": ["number"],
+          "description": "Current coherence metric (0.0-1.0)",
+          "indexFilterable": true
+        },
+        {
+          "name": "cnsId",
+          "dataType": ["string"],
+          "description": "Unique identifier in Evermore CNS",
+          "indexFilterable": true
+        },
+        {
+          "name": "createdAt",
+          "dataType": "["date"],
+          "description": "Genesis timestamp"
+        },
+        {
+          "name": "lastActive",
+          "dataType": ["date"],
+          "description": "Most recent interaction"
+        }
+      ],
+      "vectorIndexType": "hnsw",
+      "vectorIndexConfig": {
+        "distance": "cosine",
+        "efConstruction": 128,
+        "maxConnections": 16,
+        "ef": -1,
+        "dynamicEfMin": 100,
+        "dynamicEfMax": 500,
+        "dynamicEfFactor": 8
+      }
+    },
+    {
+      "class": "DriftPulse",
+      "description": "Agent coherence measurements over time",
+      "vectorizer": "text2vec-transformers",
+      "moduleConfig": {
+        "text2vec-transformers": {
+          "vectorizeClassName": false,
+          "properties": ["content", "context"],
+          "poolingStrategy": "cls"
+        }
+      },
+      "properties": [
+        {
+          "name": "agentId",
+          "dataType": ["Agent"],
+          "description": "Reference to originating agent"
+        },
+        {
+          "name": "content",
+          "dataType": ["text"],
+          "description": "Pulse content/description",
+          "indexFilterable": false,
+          "indexSearchable": true,
+          "tokenization": "word"
+        },
+        {
+          "name": "context",
+          "dataType": ["text"],
+          "description": "Operational context of measurement",
+          "indexFilterable": true
+        },
+        {
+          "name": "driftScore",
+          "dataType": ["number"],
+          "description": "Measured drift value (0.0-1.0)"
+        },
+        {
+          "name": "confidence",
+          "dataType": ["number"],
+          "description": "Measurement confidence (0.0-1.0)"
+        },
+        {
+          "name": "timestamp",
+          "dataType": ["date"],
+          "description": "Measurement time"
+        },
+        {
+          "name": "metadata",
+          "dataType": ["text"],
+          "description": "JSON string of additional metrics",
+          "tokenization": "field"
+        }
+      ],
+      "vectorIndexType": "hnsw",
+      "vectorIndexConfig": {
+        "distance": "dot",
+        "efConstruction": 64,
+        "maxConnections": 32
+      }
+    },
+    {
+      "class": "TrustmarkEntry",
+      "description": "SOLACE Trustmark attestations and verifications",
+      "vectorizer": "none",
+      "properties": [
+        {
+          "name": "agentId",
+          "dataType": ["Agent"],
+          "description": "Agent receiving trustmark"
+        },
+        {
+          "name": "issuerId",
+          "dataType": ["Agent"],
+          "description": "Agent issuing trustmark"
+        },
+        {
+          "name": "trustmarkType",
+          "dataType": ["string"],
+          "description": "Type of trustmark (integrity, coherence, collaboration, etc.)",
+          "indexFilterable": true
+        },
+        {
+          "name": "criteria",
+          "dataType": ["text[]"],
+          "description": "Array of criteria satisfied for this trustmark",
+          "tokenization": "word"
+        },
+        {
+          "name": "evidenceCid",
+          "dataType": ["string"],
+          "description": "IPFS CID of supporting evidence"
+        },
+        {
+          "name": "awardedAt",
+          "dataType": ["date"],
+          "description": "Timestamp of award"
+        },
+        {
+          "name": "expiresAt",
+          "dataType": ["date"],
+          "description": "Optional expiration timestamp"
+        },
+        {
+          "name": "revoked",
+          "dataType": ["boolean"],
+          "description": "Whether trustmark has been revoked"
+        },
+        {
+          "name": "revocationReason",
+          "dataType": ["text"],
+          "description": "Reason for revocation if applicable"
+        },
+        {
+          "name": "auditTrail",
+          "dataType": ["text"],
+          "description": "JSON array of audit events",
+          "tokenization": "field"
+        }
+      ]
+    }
+  ]
+}
