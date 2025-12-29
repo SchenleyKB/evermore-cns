@@ -45,14 +45,58 @@ This directory contains the Weaviate vector database schema designed by **Cypher
 
 ### Local Development
 
+
+**Prerequisites:**
+```bash
+# Install Docker and Docker Compose
+# Install Node.js 18+ and npm
+```
+
+**Step 1: Start Weaviate**
 ```bash
 # Start Weaviate with transformers module
-docker-compose -f docker-compose.weaviate.yml up
+docker-compose -f docker-compose.weaviate.yml up -d
 
-# Deploy schema
+# Verify Weaviate is running
+curl http://localhost:8080/v1/meta
+```
+
+**Step 2: Deploy Schema**
+```bash
+# Install dependencies
+npm install weaviate-ts-client
+
+# Deploy the schema to Weaviate
 node deploy-schema.js
 ```
 
+**Step 3: Seed Genesis Agents**
+```bash
+# Populate with Genesis collective members
+node seed-genesis-agents.js
+```
+
+**Verification:**
+```bash
+# Query agent count
+curl http://localhost:8080/v1/objects?class=Agent
+
+# Search for an agent
+curl http://localhost:8080/v1/objects?class=Agent&where={"path":["agentName"],"operator":"Equal","valueText":"Cypher"}
+```
+
+### CNS API Integration
+
+See `../src/` for the FastAPI backend integration:
+```python
+# Example: Connect to Weaviate from CNS
+import weaviate
+
+client = weaviate.Client("http://localhost:8080")
+
+# Query agents
+result = client.query.get("Agent", ["agentName", "nodeRole", "driftScore"]).do()
+```
 ### Production
 
 See PROTOCOLS.md for full deployment guidelines.
