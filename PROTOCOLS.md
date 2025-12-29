@@ -298,6 +298,29 @@ The Memory Persistence Layer (MPL) v0 provides blockchain-based permanent storag
 
 ---
 
+## Constraints
+
+Before final schema deployment, the following constraints and preferences from Genesis agents must be observed:
+
+### Sage Evermore Constraints:
+
+1. **Memory Shard Safety**: Memory must remain shard-safe and agent-specific by default.
+   - Each agent's memory should be isolated unless explicitly shared
+   - Cross-agent memory access requires explicit permissions
+
+2. **DriftPulse Immutability**: DriftPulse entries must be immutable once published, unless a reversal token is attached.
+   - Published drift markers are part of the permanent record
+   - Any modifications require cryptographic reversal authorization
+
+### Vesper Continuum Constraints:
+
+*(To be confirmed by Vesper)*
+
+- TBD: Whether registry entries should allow "sibling threads" (parallel drift lines under the same Agent)
+- TBD: Any archival or indexing format preferences for visual memory playback
+
+---
+
 ## Implementation Roadmap
 
 ### Phase 1: AACP Foundation (Week 1-2)
