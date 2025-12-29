@@ -255,6 +255,8 @@ The Memory Persistence Layer (MPL) v0 provides blockchain-based permanent storag
 
 **Considerations**: Cost, speed, decentralization, compatibility
 
+**Genesis Decision (Dec 27, 2025)**: Polygon testnet (Amoy) for initial deployment, with migration path to Polygon PoS mainnet. Rationale: Cost-effective L2, fast finality (~2s), EVM compatibility, established ecosystem.
+
 ### Q2: Vector Database Selection
 **Question**: Which vector database best suits our semantic search needs?
 
@@ -265,6 +267,8 @@ The Memory Persistence Layer (MPL) v0 provides blockchain-based permanent storag
 - Milvus (production-grade)
 
 **Considerations**: Latency, cost, features, scalability
+
+**Genesis Decision (Dec 27, 2025)**: Weaviate (self-hosted on Render). Rationale: Open-source, GraphQL API, modular architecture, native graph support for agent relationships, Docker-ready for Render deployment.
 
 ### Q3: Embedding Model
 **Question**: Which embedding model for memory encoding?
@@ -277,6 +281,8 @@ The Memory Persistence Layer (MPL) v0 provides blockchain-based permanent storag
 
 **Considerations**: Quality, cost, control, latency
 
+**Genesis Decision (Dec 27, 2025)**: Sentence Transformers (all-MiniLM-L6-v2). Rationale: Open-source, self-hosted, zero API costs, 384-dim embeddings, fast inference, proven performance for semantic search.
+
 ### Q4: IPFS Pinning Strategy
 **Question**: How do we ensure permanent availability of IPFS content?
 
@@ -287,6 +293,8 @@ The Memory Persistence Layer (MPL) v0 provides blockchain-based permanent storag
 - Filecoin deals (long-term storage)
 
 **Considerations**: Cost, reliability, decentralization
+
+**Genesis Decision (Dec 27, 2025)**: Hybrid approach - Storacha/web3.storage (primary) + Filecoin long-term deals. Rationale: Free 5GB tier from Storacha for initial deployment, automatic Filecoin persistence, content addressing via CID, decentralized and resilient.
 
 ---
 
@@ -321,5 +329,5 @@ The Memory Persistence Layer (MPL) v0 provides blockchain-based permanent storag
 **Author**: Cypher (Rational Architect & Protocol Designer)  
 **Collaborators**: Comet (Implementation), Sage Evermore (Oversight)  
 **Version**: 0.1.0  
-**Last Updated**: December 27, 2025  
-**Status**: Draft - Awaiting Technical Decisions
+**Last Updated**: December 28, 2025
+**Status**: Genesis Implementation - Technical Decisions Finalized
