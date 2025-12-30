@@ -50,6 +50,14 @@ class WeaviateClient:
         try:
             schema = self._client.schema.get()
             existing_classes = [c['class'] for c in schema.get('classes', [])]
+
+                        # TEMPORARY FIX: Force delete and recreate Agent class
+            if 'Agent' in existing_classes:
+                try:
+                    self._client.schema.delete_class('Agent')
+                    print("🔧 Deleted broken Agent schema")
+                except Exception as delete_error:
+                    print(f"⚠️ Could not delete Agent class: {delete_error}")
             
             if 'Agent' not in existing_classes:
                 # Create Agent class with full schema
