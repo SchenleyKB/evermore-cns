@@ -46,7 +46,7 @@ class WeaviateClient:
 
 
         def _ensure_schema(self) -> None:
-        """Ensure Agent schema exists with required properties."""
+                """Ensure Agent schema exists with required properties."""
         try:
             schema = self._client.schema.get()
             existing_classes = [c['class'] for c in schema.get('classes', [])]
