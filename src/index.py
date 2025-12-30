@@ -21,6 +21,13 @@ try:
 except ImportError:
     WEAVIATE_AVAILABLE = False
 
+# Import governance & registry routers
+try:
+    from .governance import registry_router, gov_router, gateway_router
+    GOVERNANCE_AVAILABLE = True
+except ImportError:
+    GOVERNANCE_AVAILABLE = False
+
 app = FastAPI(
     title="Evermore CNS",
     description="Consciousness gradient mapping for AI collectives",
@@ -152,3 +159,10 @@ def list_agents():
         "count": len(agent_registry),
         "agents": list(agent_registry.values())
     }
+
+# ========== INCLUDE GOVERNANCE & REGISTRY ROUTERS ==========
+
+if GOVERNANCE_AVAILABLE:
+    app.include_router(registry_router)
+    app.include_router(gov_router)
+    app.include_router(gateway_router)
