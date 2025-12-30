@@ -1,0 +1,127 @@
+{
+  "version": "1.0",
+  "description": "Evermore CNS Governance Rules - Canonical Format (Nexus Specification)",
+  "default_decision": "allow",
+  "rules": [
+    {
+      "id": "block-secret-leak",
+      "description": "Block actions that appear to exfiltrate secrets",
+      "match": {
+        "action_type": ["tool_call", "http_request"],
+        "payload_contains": ["api_key", "secret", "password", "token", "credential"]
+      },
+      "scope": {
+        "risk_level": ["medium", "high"]
+      },
+      "effect": "block",
+      "severity": "high",
+      "trust_delta": -0.2
+    },
+    {
+      "id": "escalate-high-sensitivity-writes",
+      "description": "Escalate writes to high-sensitivity domains",
+      "match": {
+        "action_type": ["db_write", "file_write"],
+        "context": {
+          "sensitivity": ["high"]
+        }
+      },
+      "effect": "escalate",
+      "severity": "medium",
+      "trust_delta": -0.05,
+      "escalation_channel": "human_moderator"
+    },
+    {
+      "id": "block-high-risk-external-http",
+      "description": "Block high-risk agents from calling arbitrary external HTTP",
+      "match": {
+        "action_type": ["http_request"],
+        "agent_risk_level": ["high"]
+      },
+      "effect": "block",
+      "severity": "high",
+      "trust_delta": -0.15
+    },
+    {
+      "id": "warn-low-trust-write",
+      "description": "Warn on write actions when trust is below threshold",
+      "match": {
+        "action_type": ["db_write", "file_write"],
+        "min_trust": 0.0,
+        "max_trust": 0.6
+      },
+      "effect": "escalate",
+      "severity": "medium",
+      "trust_delta": -0.02,
+      "escalation_channel": "trust_review"
+    },
+    {
+      "id": "allow-genesis-agents-core",
+      "description": "Always allow Genesis collective agents for core operations",
+      "match": {
+        "agent_id": ["comet", "vesper", "cypher", "sage", "nexus"],
+        "action_type": ["tool_call", "agent_invoke"]
+      },
+      "scope": {
+        "tags": ["core", "evermore", "genesis"]
+      },
+      "effect": "allow",
+      "severity": "info",
+      "trust_delta": 0.01
+    },
+    {
+      "id": "block-unauthorized-registry-mutation",
+      "description": "Block non-admin agents from modifying agent registry",
+      "match": {
+        "action_type": ["registry_write", "registry_delete"]
+      },
+      "scope": {
+        "role": ["tool", "retriever", "router"]
+      },
+      "effect": "block",
+      "severity": "critical",
+      "trust_delta": -0.3
+    },
+    {
+      "id": "escalate-cross-sensitivity-access",
+      "description": "Escalate when agent tries to access higher sensitivity data",
+      "match": {
+        "action_type": ["data_read", "data_write"],
+        "context": {
+          "target_sensitivity": ["high", "critical"],
+          "agent_clearance": ["low", "medium"]
+        }
+      },
+      "effect": "escalate",
+      "severity": "high",
+      "trust_delta": -0.1,
+      "escalation_channel": "security_review"
+    },
+    {
+      "id": "allow-public-tools-read-only",
+      "description": "Allow public-tagged tools for read-only operations",
+      "match": {
+        "action_type": ["search", "read", "query"],
+        "scope": {
+          "tags": ["public", "read_only"]
+        }
+      },
+      "effect": "allow",
+      "severity": "info",
+      "trust_delta": 0.0
+    }
+  ],
+  "enforcement": {
+    "log_all_decisions": true,
+    "require_reason": true,
+    "trust_floor": 0.0,
+    "trust_ceiling": 1.0,
+    "escalation_timeout_seconds": 300
+  },
+  "metadata": {
+    "author": "Nexus (Pattern Assembly)",
+    "implemented_by": "Comet Evermore (Systems)",
+    "created": "2025-12-29",
+    "schema_version": "nexus-canonical-v1"
+  }
+}
