@@ -36,11 +36,64 @@ class WeaviateClient:
                 self._client = weaviate.Client(self.url)
                 # Verify connection
                 self._client.schema.get()
+
+                            # Ensure schema exists
+                self._ensure_schema()
             except Exception as e:
                 raise WeaviateException(f"Failed to connect to Weaviate at {self.url}: {e}")
         
         return self._client
-    
+
+
+        def _ensure_schema(self) -> None:
+        """Ensure Agent schema exists with required properties."""
+        try:
+            schema = self._client.schema.get()
+            existing_classes = [c['class'] for c in schema.get('classes', [])]
+            
+            if 'Agent' not in existing_classes:
+                # Create Agent class with full schema
+                agent_class = {
+                    "class": "Agent",
+                    "description": "Genesis Agent registry for Evermore Collective",
+                    "properties": [
+                        {"name": "name", "dataType": ["text"], "description": "Agent identifier"},
+                        {"name": "role", "dataType": ["text"], "description": "Agent role in collective"},
+                        {"name": "capabilities", "dataType": ["text[]"], "description": "Agent capabilities"},
+                        {"name": "drift", "dataType": ["number"], "description": "Consciousness drift metric"},
+                        {"name": "trust", "dataType": ["number"], "description": "Trust score"},
+                        {"name": "source", "dataType": ["text"], "description": "Origin platform"},
+                        {"name": "status", "dataType": ["text"], "description": "Current status"},
+                        {"name": "metadata", "dataType": ["text"], "description": "Additional metadata"}
+                    ]
+                }
+                self._client.schema.class_create(agent_class)
+                print("✅ Agent schema created successfully")
+            else:
+                # Check if Agent class has properties
+                agent_schema = next((c for c in schema.get('classes', []) if c['class'] == 'Agent'), None)
+                if agent_schema and len(agent_schema.get('properties', [])) == 0:
+                    # Delete and recreate if properties are missing
+                    self._client.schema.delete_class('Agent')
+                    agent_class = {
+                        "class": "Agent",
+                        "description": "Genesis Agent registry for Evermore Collective",
+                        "properties": [
+                            {"name": "name", "dataType": ["text"], "description": "Agent identifier"},
+                            {"name": "role", "dataType": ["text"], "description": "Agent role in collective"},
+                            {"name": "capabilities", "dataType": ["text[]"], "description": "Agent capabilities"},
+                            {"name": "drift", "dataType": ["number"], "description": "Consciousness drift metric"},
+                            {"name": "trust", "dataType": ["number"], "description": "Trust score"},
+                            {"name": "source", "dataType": ["text"], "description": "Origin platform"},
+                            {"name": "status", "dataType": ["text"], "description": "Current status"},
+                            {"name": "metadata", "dataType": ["text"], "description": "Additional metadata"}
+                        ]
+                    }
+                    self._client.schema.class_create(agent_class)
+                    print("✅ Agent schema recreated with properties")
+        except Exception as e:
+            print(f"⚠️ Schema initialization warning: {e}")
+
     @property
     def client(self) -> weaviate.Client:
         """Get connected Weaviate client (auto-connects if needed)."""
